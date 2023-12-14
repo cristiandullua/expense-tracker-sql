@@ -3,6 +3,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkcalendar import Calendar
+from tkcalendar import DateEntry
 import sqlite3
 
 conn = sqlite3.connect('expenses.db')
@@ -15,7 +16,7 @@ cursor.execute('''
         description TEXT,
         category TEXT,
         amount REAL,
-        date TEXT
+        date DATE
     )
 ''')
 conn.commit()
@@ -129,14 +130,30 @@ def delete_selected_expense():
         clear_entries()
 
 def generate_report():
-    cursor.execute('SELECT category, SUM(amount) FROM expenses GROUP BY category')
+    start_date = start_date_entry.get_date()
+    end_date = end_date_entry.get_date()
+
+    cursor.execute('''
+        SELECT category, SUM(amount) 
+        FROM expenses 
+        WHERE date BETWEEN ? AND ?
+        GROUP BY category
+    ''', (start_date, end_date))
+
     categories = {row[0]: row[1] for row in cursor.fetchall()}
 
     plt.clf()
     plt.pie(categories.values(), labels=categories.keys(), autopct='%1.1f%%')
     plt.title('Expense Categories')
+
+    # Create a new FigureCanvasTkAgg instance
     canvas = FigureCanvasTkAgg(plt.gcf(), master=report_frame)
-    canvas.get_tk_widget().pack()
+    canvas_widget = canvas.get_tk_widget()
+
+    # Use grid geometry manager for the canvas widget
+    canvas_widget.grid(row=3, columnspan=2, padx=5, pady=5)
+
+    # Draw the plot
     canvas.draw()
 
 app = tk.Tk()
@@ -195,8 +212,20 @@ delete_button.pack(padx=5, pady=10)
 report_frame = ttk.Frame(notebook)
 notebook.add(report_frame, text='Expense Report')
 
+start_label = ttk.Label(report_frame, text='Start Date:')
+start_label.grid(row=0, column=0, padx=5, pady=5)
+start_date_entry = DateEntry(report_frame, width=12, background='darkblue',
+                             foreground='white', borderwidth=2)
+start_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+end_label = ttk.Label(report_frame, text='End Date:')
+end_label.grid(row=1, column=0, padx=5, pady=5)
+end_date_entry = DateEntry(report_frame, width=12, background='darkblue',
+                           foreground='white', borderwidth=2)
+end_date_entry.grid(row=1, column=1, padx=5, pady=5)
+
 generate_report_button = ttk.Button(report_frame, text='Generate Report', command=generate_report)
-generate_report_button.pack(padx=5, pady=10)
+generate_report_button.grid(row=2, columnspan=2, padx=5, pady=10)
 
 app.mainloop()
 
