@@ -6,6 +6,7 @@ from tkcalendar import Calendar
 from tkcalendar import DateEntry
 import sqlite3
 
+# Connect to SQLite database
 conn = sqlite3.connect('expenses.db')
 cursor = conn.cursor()
 
@@ -21,7 +22,9 @@ cursor.execute('''
 ''')
 conn.commit()
 
+# Function to add an expense to the database
 def add_expense():
+    # Retrieve data from input fields
     description = description_entry.get()
     category = category_entry.get()
     amount = amount_entry.get()
@@ -33,6 +36,7 @@ def add_expense():
         error_label.config(text="Amount must be a valid number.")
         return
 
+    # Check if description and category are provided
     if description and category:
         data = (description, category, amount, date)
         cursor.execute('INSERT INTO expenses (description, category, amount, date) VALUES (?, ?, ?, ?)', data)
@@ -44,16 +48,20 @@ def add_expense():
     else:
         error_label.config(text="Please fill in all the fields.")
 
+# Function to edit an existing expense
 def edit_expense():
+    # Get the selected expense ID from the list
     selected_item = expense_list.selection()
     if not selected_item:
         return
 
     selected_expense_id = expense_list.item(selected_item, "values")[4]
 
+    # Create a new window for editing
     edit_window = tk.Toplevel()
     edit_window.title('Edit Expense')
 
+    # Fetch expense data based on its ID
     cursor.execute('SELECT * FROM expenses WHERE id=?', (selected_expense_id,))
     expense_data = cursor.fetchone()
 
@@ -101,12 +109,14 @@ def edit_expense():
     save_button = ttk.Button(edit_window, text='Save', command=save_edited_expense)
     save_button.grid(row=4, columnspan=2, padx=5, pady=10)
 
+# Function to update the expense list in the UI
 def update_expense_list():
     cursor.execute('SELECT * FROM expenses')
     expenses = cursor.fetchall()
 
     expense_list.delete(*expense_list.get_children())
 
+    # Populate the expense list with database records
     for expense in expenses:
         item_id = expense[0]
         description = expense[1]
@@ -115,11 +125,13 @@ def update_expense_list():
         date = expense[4]
         expense_list.insert('', 'end', values=(description, category, amount, date, item_id))
 
+# Function to clear input fields
 def clear_entries():
     description_entry.delete(0, 'end')
     category_entry.delete(0, 'end')
     amount_entry.delete(0, 'end')
 
+# Function to delete the selected expense
 def delete_selected_expense():
     selected_item = expense_list.selection()
     if selected_item:
@@ -129,6 +141,7 @@ def delete_selected_expense():
         update_expense_list()
         clear_entries()
 
+# Function to generate an expense report
 def generate_report():
     start_date = start_date_entry.get_date()
     end_date = end_date_entry.get_date()
@@ -142,11 +155,12 @@ def generate_report():
 
     categories = {row[0]: row[1] for row in cursor.fetchall()}
 
+    # Plot a pie chart based on expense categories
     plt.clf()
     plt.pie(categories.values(), labels=categories.keys(), autopct='%1.1f%%')
     plt.title('Expense Categories')
 
-    # Create a new FigureCanvasTkAgg instance
+    # Create a new FigureCanvasTkAgg instance and display the chart
     canvas = FigureCanvasTkAgg(plt.gcf(), master=report_frame)
     canvas_widget = canvas.get_tk_widget()
 
@@ -156,12 +170,15 @@ def generate_report():
     # Draw the plot
     canvas.draw()
 
+# Create the main application window
 app = tk.Tk()
 app.title('Expense Tracker')
 
+# Create a notebook-style UI for different sections
 notebook = ttk.Notebook(app)
 notebook.pack(padx=10, pady=10)
 
+# Add Expense section
 expense_frame = ttk.Frame(notebook)
 notebook.add(expense_frame, text='Add Expense')
 
