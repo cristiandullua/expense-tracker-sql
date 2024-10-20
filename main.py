@@ -149,7 +149,7 @@ def generate_report():
     cursor.execute('''
         SELECT category, SUM(amount) 
         FROM expenses 
-        WHERE date BETWEEN ? AND ?
+        WHERE date >= ? AND date <= ?
         GROUP BY category
     ''', (start_date, end_date))
 

@@ -4,7 +4,7 @@ As a software engineer, this project is a part of my ongoing learning journey to
 
 The primary goal behind developing this software is to enhance my proficiency in database management, user interface design, and backend development using SQL and Python. 
 
-To see a detailed demonstration, code walkthrough, and an overview of how I created the Relational Database, watch the [Software Demo Video](https://www.loom.com/share/54bb9ed304184148b2d429122b55a189?sid=6cc8418c-4e13-4bb5-ae61-14a3a7912f75) (4-5 minutes).
+To see a detailed demonstration, code walkthrough, and an overview of how I created the Relational Database, watch the [Software Demo Video](https://www.loom.com/share/76dfe3fc7c8e4995a297068f30cbb7cf) (4-5 minutes).
 
 # Relational Database
 
